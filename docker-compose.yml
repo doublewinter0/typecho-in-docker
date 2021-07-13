@@ -1,0 +1,44 @@
+# version: "3.9"
+
+services:
+  typecho-postgres:
+    container_name: typecho-postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=typecho
+    hostname: postgres
+    image: postgres:alpine
+    networks:
+      typecho:
+        ipv4_address: 10.10.1.10
+    privileged: true
+    restart: always
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+
+  typecho:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: typecho
+    depends_on:
+      - typecho-postgres
+    hostname: typecho
+    image: erdong/typecho:latest
+    networks:
+      typecho:
+        ipv4_address: 10.10.1.11
+    # privileged: true
+    restart: always
+
+networks:
+  typecho:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: typecho
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.10.1.0/24"
+    name: typecho
